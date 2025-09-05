@@ -5,6 +5,9 @@ from streamlit_option_menu import option_menu
 import pandas as pd
 import plotly.express as px
 import db
+import sweetify
+
+
 
 # ---------------------- PAGE CONFIGURATION ----------------------
 st.set_page_config(
