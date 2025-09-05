@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit.components.v1 import html
 import streamlit.components.v1 as components
-from streamlit_option_menu import option_menu
+# from streamlit_option_menu import option_menu
 import pandas as pd
 import plotly.express as px
 import db
@@ -28,8 +28,17 @@ if "logout_confirm" not in st.session_state:
 df = pd.read_csv("Crime.csv")
 
 # ---------------------- SIDEBAR NAVIGATION ----------------------
+import streamlit as st
+
+# Custom option_menu function (no external dependency)
+def option_menu(title, options, icons=None, menu_icon=None, default_index=0):
+    st.markdown(f"### {title}")
+    choice = st.radio("", options, index=default_index, horizontal=True)
+    return choice
+
+# ---------------------- SIDEBAR NAVIGATION ----------------------
 with st.sidebar:
-    if st.session_state.logged_in:
+    if st.session_state.get("logged_in", False):
         opt = option_menu(
             "Navigation",
             ["Home", "Data Analysis", "Data Visualization", "Feedback", "Logout"],
@@ -42,6 +51,7 @@ with st.sidebar:
             icons=["house", "person", "key"]
         )
 
+    st.write("Selected Page:", opt)
 # ---------------------- HOME ----------------------
 if opt == "Home":
     st.title("🚔 Crime Analysis Dashboard")
