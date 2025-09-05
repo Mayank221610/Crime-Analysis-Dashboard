@@ -9,7 +9,7 @@ cursor=conn.cursor()
 
 def fed(data):
     try:
-        cursor.execute("INSERT INTO Details(name,email,feedback) VALUES(?,?,?)",data)
+        cursor.execute("INSERT INTO Details(feedback) VALUES(?)",data)
         conn.commit()
         return True
     except Exception as e:
