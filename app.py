@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit.components.v1 import html
 import streamlit.components.v1 as components
-import streamlit_option_menu as option_menu
+from streamlit_option_menu import option_menu
 import pandas as pd
 import plotly.express as px
 import db
