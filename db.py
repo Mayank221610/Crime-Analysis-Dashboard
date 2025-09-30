@@ -44,4 +44,19 @@ def login(data):
     except Exception as e:
         print(e)
         return False
+# Function to reset a user's password
+def reset_password(email, new_password):
+    try:
+        cursor.execute("UPDATE Info SET Password=? WHERE Email=?", (new_password, email))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return False  # No user found with the given email
+        return True
+    except Exception as e:
+        print("Error in reset_password:", e)
+        return False
+
+
+
+
 

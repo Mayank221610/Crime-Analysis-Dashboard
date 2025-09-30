@@ -15,33 +15,63 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# ---------------------- SESSION STATE ----------------------
+# ----------------- SESSION STATE -----------------
+# ----------------- SESSION STATE -----------------
 if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "user" not in st.session_state:
-    st.session_state.user = None
-if "logout_confirm" not in st.session_state:
-    st.session_state.logout_confirm = False
+    st.session_state.logged_in = False   # Default: Not logged in
+if "show_logout_popup" not in st.session_state:
+    st.session_state.show_logout_popup = False
+
+# ----------------- TOP-RIGHT LOGOUT BUTTON -----------------
+if st.session_state.logged_in:
+    topbar = st.container()
+    with topbar:
+        col1, col2 = st.columns([8, 1])  # Right align
+        with col2:
+            if st.button("Logout"):
+                st.session_state.show_logout_popup = True
+
+# ----------------- POPUP (Dialog) -----------------
+if st.session_state.show_logout_popup:
+
+    @st.dialog("Confirm Logout")
+    def logout_confirm():
+        st.write("Do you want to log out?")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("Yes, Logout"):
+                st.session_state.logged_in = False
+                st.session_state.show_logout_popup = False
+                st.success("You have been logged out!")
+                st.rerun()
+
+        with col2:
+            if st.button("Cancel"):
+                st.session_state.show_logout_popup = False
+                st.rerun()
+
+    logout_confirm()
 
 # ---------------------- LOAD DATA ----------------------
 df = pd.read_csv("Crime.csv")
 
 # ---------------------- SIDEBAR NAVIGATION ----------------------
 with st.sidebar:
-    if st.session_state.logged_in:
+    if not st.session_state.logged_in:
+        # Default menu (jab app open ho)
         opt = option_menu(
             "Navigation",
-            ["Home", "Data Analysis", "Data Visualization", "Feedback", "Logout"],
-            icons=["house", "bar-chart", "pie-chart", "chat-left-text", "box-arrow-right"]
+            ["Home", "Registration", "Login", "Forget Password"],
+            icons=["house", "person", "key", "lock"]
         )
     else:
+        # Agar login ho gaya ho to dusra menu
         opt = option_menu(
             "Navigation",
-            ["Home", "Registration", "Login"],
-            icons=["house", "person", "key"]
+            ["Home", "Data Analysis", "Data Visualization", "Feedback"],
+            icons=["house", "bar-chart", "pie-chart", "chat-left-text"]
         )
-
 # ---------------------- HOME ----------------------
 if opt == "Home":
     st.title("🚔 Crime Analysis Dashboard")
@@ -127,6 +157,28 @@ if opt == "Registration" and not st.session_state.get("logged_in", False):
                 else:
                     st.error("Registration failed")
 
+# ---------------------- FORGET PASSWORD ----------------------
+elif opt == "Forget Password" and not st.session_state.logged_in:
+    st.title("🔐 Forgot Password")
+
+    with st.form("forget_form"):
+        email = st.text_input("Enter your registered email")
+        new_password = st.text_input("Enter new password", type="password")
+        confirm_password = st.text_input("Confirm new password", type="password")
+        btn = st.form_submit_button("Reset Password")
+
+    if btn:
+        if not email or not new_password or not confirm_password:
+            st.warning("Please fill all fields")
+        elif new_password != confirm_password:
+            st.error("Passwords do not match")
+        else:
+            result = db.reset_password(email, new_password)
+            if result:
+                st.success("Password updated successfully!")
+                st.toast("Your password has been changed")
+            else:
+                st.error("Email not found in our database")
 
 
 # ---------------------- LOGIN ----------------------
@@ -149,29 +201,6 @@ elif opt == "Login" and not st.session_state.logged_in:
                 st.rerun()
             else:
                 st.error("Invalid email or password")
-
-# ---------------------- LOGOUT ----------------------
-elif opt == "Logout" and st.session_state.logged_in:
-    if not st.session_state.logout_confirm:
-        if st.button("Logout"):
-            st.session_state.logout_confirm = True
-            st.rerun()
-    else:
-        st.warning("Are you sure you want to logout?")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Yes, Logout"):
-                st.session_state.logged_in = False
-                st.session_state.user = None
-                st.session_state.logout_confirm = False
-                st.success("Logged out successfully ")
-                st.rerun()
-        with col2:
-            if st.button("Cancel"):
-                st.session_state.logout_confirm = False
-                st.info("Logout cancelled ")
-                st.rerun()
-    
 
 # ---------------------- DATA ANALYSIS ----------------------
 elif opt == "Data Analysis" and st.session_state.logged_in:
